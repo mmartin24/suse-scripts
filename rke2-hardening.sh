@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Simple script to deploy RKE2 hardened with psa (valid for Kubernetes > 1.25)
-# It assumes clean enviornment with no RKE2 installed or 
+# Simple script to deploy RKE2 hardened with psa (valid for Kubernetes > 1.24)
+# It assumes a clean environment with no RKE2 installed or 
 # other Kubernetes distributions (k3s, K3D, etc.)
 
 set -E -x
 
-#Node Setup
+# Node Setup
 sudo bash -c 'cat << EOF > /etc/sysctl.d/90-kubelet.conf
 vm.panic_on_oom=0
 vm.overcommit_memory=1
@@ -14,7 +14,7 @@ kernel.panic=10
 kernel.panic_on_oops=1
 EOF'
 
-#Enable above options by executing below commands.
+# Enable the above options by executing the below commands.
 sudo sysctl -p /etc/sysctl.d/90-kubelet.conf
 
 # ETCD configuration creating its group
@@ -106,7 +106,7 @@ metadata:
 automountServiceAccountToken: false
 EOF'
 
-# Update Service Account to default namespace
+# Update Service Account to the default namespace
 for namespace in $(kubectl get namespaces -A -o=jsonpath="{.items[*]['metadata.name']}"); do
   echo -n "Patching namespace $namespace - "
   kubectl patch serviceaccount default -n ${namespace} -p "$(cat service_account_update.yaml)"
@@ -114,5 +114,3 @@ done
 
 # Patch ingress class to make it default
 kubectl patch ingressClass nginx -p '{"metadata": {"annotations":{"ingressclass.kubernetes.io/is-default-class": "true"}}}'
-
-
